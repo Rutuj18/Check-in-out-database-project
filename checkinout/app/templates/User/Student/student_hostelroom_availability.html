@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Check Room Availability</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #dcefff, #eef2ff);
+      margin: 0;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background-color: #ffffffee;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    .logout-btn {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      background-color: #dc3545;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .logout-btn:hover {
+      background-color: #b02a37;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #1e3a8a;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    label {
+      font-weight: 600;
+      color: #1e3a8a;
+    }
+
+    input, select {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #2563eb;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #1e40af;
+    }
+
+    .result-box {
+      margin-top: 25px;
+      background-color: #f6faff;
+      padding: 15px;
+      border-radius: 10px;
+      border-left: 5px solid #2563eb;
+    }
+
+    .back-btn {
+      display: inline-block;
+      margin-top: 30px;
+      background-color: #2563eb;
+      color: white;
+      padding: 10px 20px;
+      font-size: 15px;
+      border-radius: 10px;
+      text-decoration: none;
+    }
+
+    .back-btn:hover {
+      background-color: #1e40af;
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="{{url_for('main.home')}}" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+
+    <h1><i class="fas fa-search"></i> Check Room Availability</h1>
+
+    <form id="availability-form">
+      <div>
+        <label for="hostel">Hostel Name</label>
+        <select name="hostel" id="hostel" required>
+          <option value="">-- Loading Hostels --</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="room">Room Number (optional)</label>
+        <input type="text" name="room" id="room" placeholder="e.g. B102"
+               pattern="^[A-L][0-9]{3}$" title="Format must be one letter A–L followed by 3 digits (e.g., A102)">
+      </div>
+
+      <button type="submit"><i class="fas fa-search"></i> Search</button>
+    </form>
+
+    <div class="result-box" id="room-result" style="display:none;">
+      <div id="single-result" style="display:none;">
+        <strong>Status:</strong> <span id="room-status"></span><br>
+        <strong>Room Type:</strong> <span id="room-type"></span><br>
+        <strong>Hostel:</strong> <span id="room-guesthouse"></span>
+      </div>
+
+      <div id="multiple-result" style="display:none;">
+        <strong>Vacant Rooms:</strong>
+        <ul id="available-rooms-list"></ul>
+      </div>
+    </div>
+
+    <a href="{{url_for('student.student_hostel')}}" class="back-btn">← Back to Room Services</a>
+  </div>
+
+  <script>
+    // Load hostels on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      fetch('/student/get_hostels')
+        .then(res => res.json())
+        .then(data => {
+          const hostelSelect = document.getElementById('hostel');
+          hostelSelect.innerHTML = '<option value="">-- Select Hostel --</option>';
+          data.forEach(name => {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            hostelSelect.appendChild(option);
+          });
+        })
+        .catch(() => {
+          alert("Failed to load hostels from server.");
+        });
+    });
+
+    document.getElementById('availability-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const hostel = document.getElementById('hostel').value;
+      const room = document.getElementById('room').value.trim();
+
+      if (!hostel) {
+        alert("Please select a hostel.");
+        return;
+      }
+
+      if (room && !/^[A-L][0-9]{3}$/.test(room)) {
+        alert("Room number format invalid. Use A-L followed by 3 digits (e.g., B102).");
+        return;
+      }
+
+      fetch('/student/check_room_status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hostel, room })
+      })
+      .then(res => res.json())
+      .then(data => {
+        const resultBox = document.getElementById('room-result');
+        const singleResult = document.getElementById('single-result');
+        const multipleResult = document.getElementById('multiple-result');
+        resultBox.style.display = 'block';
+        singleResult.style.display = 'none';
+        multipleResult.style.display = 'none';
+
+        if (data.error) {
+          alert(data.error);
+          resultBox.style.display = 'none';
+          return;
+        }
+
+        if (data.status) {
+          // Specific room
+          document.getElementById('room-status').textContent = data.status;
+          document.getElementById('room-type').textContent = data.room_type;
+          document.getElementById('room-guesthouse').textContent = data.guesthouse;
+          singleResult.style.display = 'block';
+        } else if (data.available_rooms) {
+          // List of vacant rooms
+          const list = document.getElementById('available-rooms-list');
+          list.innerHTML = '';
+          data.available_rooms.forEach(r => {
+            const li = document.createElement('li');
+            li.textContent = `${r.room_no} (${r.room_type})`;
+            list.appendChild(li);
+          });
+          multipleResult.style.display = 'block';
+        }
+      })
+      .catch(() => {
+        alert("Failed to check room status.");
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Registration</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(to right, #c2e9fb, #a1c4fd);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 60px 20px 20px; /* Adds spacing from top */
+    }
+
+
+    .container {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(12px) saturate(180%);
+      -webkit-backdrop-filter: blur(12px) saturate(180%);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      padding: 40px 30px;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 25px;
+      font-size: 28px;
+      color: #1e3a8a;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+      font-size: 15px;
+    }
+
+    .gender-options {
+      display: flex;
+      gap: 15px;
+      margin-top: 5px;
+    }
+
+    .gender-options label {
+      font-weight: 500;
+      color: #444;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      margin-top: 10px;
+    }
+
+    .btn:hover {
+      background-color: #1e40af;
+    }
+
+    .login-link {
+      display: block;
+      text-align: center;
+      margin-top: 15px;
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .login-link:hover {
+      text-decoration: underline;
+    }
+
+    .back-link {
+      display: block;
+      width: 100%;
+      margin-top: 20px;
+      background-color: #6b7280;
+      text-align: center;
+      text-decoration: none;
+      color: #fff;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
+
+    .back-link:hover {
+      background-color: #4b5563;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1><i class="fas fa-user-graduate"></i> Student Registration</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}" role="alert">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <form method="POST" action="{{ url_for('student.student_register') }}">
+      <div class="form-group">
+        <label for="name">Student Name</label>
+        <input type="text" id="name" name="name" required>
+      </div>
+
+      <div class="form-group">
+        <label for="roll">Roll Number</label>
+        <input type="text" id="roll" name="roll" required>
+      </div>
+
+      <div class="form-group">
+        <label for="dept">Department</label>
+        <select id="dept" name="dept" required>
+          <option value="">Select Department</option>
+          <option value="CSE">CSE</option>
+          <option value="ECE">ECE</option>
+          <option value="EEE">EEE</option>
+          <option value="MECH">Mechanical</option>
+          <option value="CIVIL">Civil</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="gender">Gender</label>
+        <select name="gender" id="gender" required>
+        <option value="">-- Select Gender --</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
+      </div>
+
+      <div class="form-group">
+        <label for="hostel">Hostel Name</label>
+        <select id="hostel" name="hostel" required onchange="updateRooms()">
+          <option value="">Select Hostel</option>
+          <option value="Aibaan">Aibaan</option>
+          <option value="Beauki">Beauki</option>
+          <option value="Chimair">Chimair</option>
+          <option value="Duven">Duven</option>
+          <option value="Emiet">Emiet</option>
+          <option value="Firpeal">Firpeal</option>
+          <option value="Griwiksh">Griwiksh</option>
+          <option value="Hiqom">Hiqom</option>
+          <option value="Ijokha">Ijokha</option>
+          <option value="Jurqia">Jurqia</option>
+          <option value="Kyzeel">Kyzeel</option>
+          <option value="Lekhaag">Lekhaag</option>
+        </select>
+      </div>
+
+      <script>
+        const roomData = {
+          Aibaan: ["A100", "A101", "A102", "A103", "A104", "A105", "A106", "A107", "A108", "A109", "A110", "A111",
+                   "A200", "A201", "A202", "A203", "A204", "A205", "A206", "A207", "A208", "A209",
+                   "A300", "A301", "A302", "A303", "A304", "A305", "A306", "A307", "A308", "A309",
+                   "A400", "A401", "A402", "A403", "A404", "A405", "A406", "A407", "A408", "A409"],
+          Beuki: ["B100", "B101", "B102", "B103", "B104", "B105", "B106", "B107", "B108", "B109", "B110", "B111",
+                  "B200", "B201", "B202", "B203", "B204", "B205", "B206", "B207", "B208", "B209",
+                  "B300", "B301", "B302", "B303", "B304", "B305", "B306", "B307", "B308", "B309",
+                  "B400", "B401", "B402", "B403", "B404", "B405", "B406", "B407", "B408", "B409"],
+          Chimair: ["C100", "C101", "C102", "C103", "C104", "C105", "C106", "C107", "C108", "C109", "C110", "C111",
+                    "C200", "C201", "C202", "C203", "C204", "C205", "C206", "C207", "C208", "C209",
+                    "C300", "C301", "C302", "C303", "C304", "C305", "C306", "C307", "C308", "C309",
+                    "C400", "C401", "C402", "C403", "C404", "C405", "C406", "C407", "C408", "C409"],
+          Duven: ["D100", "D101", "D102", "D103", "D104", "D105", "D106", "D107", "D108", "D109", "D110", "D111",
+                  "D200", "D201", "D202", "D203", "D204", "D205", "D206", "D207", "D208", "D209",
+                  "D300", "D301", "D302", "D303", "D304", "D305", "D306", "D307", "D308", "D309",
+                  "D400", "D401", "D402", "D403", "D404", "D405", "D406", "D407", "D408", "D409"],
+          Emiet: ["E100", "E101", "E102", "E103", "E104", "E105", "E106", "E107", "E108", "E109", "E110", "E111",
+                  "E200", "E201", "E202", "E203", "E204", "E205", "E206", "E207", "E208", "E209",
+                  "E300", "E301", "E302", "E303", "E304", "E305", "E306", "E307", "E308", "E309",
+                  "E400", "E401", "E402", "E403", "E404", "E405", "E406", "E407", "E408", "E409"],
+          Firpeal: ["F100", "F101", "F102", "F103", "F104", "F105", "F106", "F107", "F108", "F109", "F110", "F111",
+                    "F200", "F201", "F202", "F203", "F204", "F205", "F206", "F207", "F208", "F209",
+                    "F300", "F301", "F302", "F303", "F304", "F305", "F306", "F307", "F308", "F309",
+                    "F400", "F401", "F402", "F403", "F404", "F405", "F406", "F407", "F408", "F409"],
+          Griwiksh: ["G100", "G101", "G102", "G103", "G104", "G105", "G106", "G107", "G108", "G109", "G110", "G111",
+                     "G200", "G201", "G202", "G203", "G204", "G205", "G206", "G207", "G208", "G209",
+                     "G300", "G301", "G302", "G303", "G304", "G305", "G306", "G307", "G308", "G309",
+                     "G400", "G401", "G402", "G403", "G404", "G405", "G406", "G407", "G408", "G409"],
+          Hiqom: ["H100", "H101", "H102", "H103", "H104", "H105", "H106", "H107", "H108", "H109", "H110", "H111",
+                  "H200", "H201", "H202", "H203", "H204", "H205", "H206", "H207", "H208", "H209",
+                  "H300", "H301", "H302", "H303", "H304", "H305", "H306", "H307", "H308", "H309",
+                  "H400", "H401", "H402", "H403", "H404", "H405", "H406", "H407", "H408", "H409"],
+          Ijokha: ["I100", "I101", "I102", "I103", "I104", "I105", "I106", "I107", "I108", "I109", "I110", "I111",
+                   "I200", "I201", "I202", "I203", "I204", "I205", "I206", "I207", "I208", "I209",
+                   "I300", "I301", "I302", "I303", "I304", "I305", "I306", "I307", "I308", "I309",
+                   "I400", "I401", "I402", "I403", "I404", "I405", "I406", "I407", "I408", "I409"],
+          Jurqia: ["J100", "J101", "J102", "J103", "J104", "J105", "J106", "J107", "J108", "J109", "J110", "J111",
+                   "J200", "J201", "J202", "J203", "J204", "J205", "J206", "J207", "J208", "J209", "J210", "J211",
+                   "J300", "J301", "J302", "J303", "J304", "J305", "J306", "J307", "J308", "J309", "J310", "J311",
+                   "J400", "J401", "J402", "J403", "J404", "J405", "J406", "J407", "J408", "J409", "J410"],
+          Kyzeel: ["K100", "K101", "K102", "K103", "K104", "K105", "K106", "K107", "K108", "K109", "K110", "K111",
+                   "K200", "K201", "K202", "K203", "K204", "K205", "K206", "K207", "K208", "K209",
+                   "K300", "K301", "K302", "K303", "K304", "K305", "K306", "K307", "K308", "K309",
+                   "K400", "K401", "K402", "K403", "K404", "K405", "K406", "K407", "K408", "K409"],
+          Lekhaag: ["L100", "L101", "L102", "L103", "L104", "L105", "L106", "L107", "L108", "L109", "L110", "L111",
+                    "L200", "L201", "L202", "L203", "L204", "L205", "L206", "L207", "L208", "L209",
+                    "L300", "L301", "L302", "L303", "L304", "L305", "L306", "L307", "L308", "L309",
+                    "L400", "L401", "L402", "L403", "L404", "L405", "L406", "L407", "L408", "L409"]
+        };
+      
+        function updateRooms() {
+          const hostel = document.getElementById("hostel").value;
+          const roomSelect = document.getElementById("room");
+      
+          // Clear previous options
+          roomSelect.innerHTML = '<option value="">Select Room</option>';
+      
+          // Populate new options
+          if (roomData[hostel]) {
+            roomData[hostel].forEach(room => {
+              const option = document.createElement("option");
+              option.value = room;
+              option.textContent = room;
+              roomSelect.appendChild(option);
+            });
+          }
+        }
+      </script>
+      
+      
+      <div class="form-group">
+        <label for="room">Room Number</label>
+        <select id="room" name="room" required>
+          <option value="">Select Room</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="messid">Mess ID</label>
+        <input type="text" id="messid" name="messid" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
+      </div>
+      <div class="form-group">
+        <label for="confirm_password">Confirm Password</label>
+        <input type="password" id="confirm_password" name="confirm_password" required>
+      </div>
+      
+
+      <button type="submit" class="btn">Register</button>
+      <a href="{{url_for('student.student_login')}}" class="login-link">Already have an account? Login</a>
+    </form>
+
+    <a href="{{url_for('student.student_login_register')}}" class="back-link">← Back to Student Page</a>
+  </div>
+</body>
+</html>

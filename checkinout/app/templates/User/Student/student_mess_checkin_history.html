@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mess Check-In History</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #dcefff, #eef2ff);
+      padding: 40px 20px;
+      margin: 0;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+
+    .logout-btn {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      background-color: #dc3545;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .logout-btn:hover {
+      background-color: #b02a37;
+    }
+
+    h2 {
+      text-align: center;
+      color: #1e3a8a;
+      margin-bottom: 20px;
+    }
+
+    .filter-section {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    select {
+      padding: 8px 12px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+
+    th {
+      background-color: #e0ecff;
+      color: #1e3a8a;
+    }
+
+    .back-btn {
+      margin-top: 30px;
+      display: inline-block;
+      background-color: #2563eb;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+    }
+
+    .back-btn:hover {
+      background-color: #1e40af;
+    }
+
+    .no-records {
+      text-align: center;
+      font-style: italic;
+      color: #888;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="{{ url_for('main.home') }}" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+
+    <h2><i class="fas fa-clock-rotate-left"></i> Mess Check-In History</h2>
+
+    <div class="filter-section">
+      <label for="filter">View: </label>&nbsp;
+      <select id="filter">
+        <option value="today">Today</option>
+        <option value="week">This Week</option>
+        <option value="month">This Month</option>
+      </select>
+    </div>
+
+    <table id="history-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Mess Name</th>
+          <th>Check-In Time</th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        <!-- Dynamic data here -->
+      </tbody>
+    </table>
+
+    <div id="no-records" class="no-records" style="display: none;">No records found for this filter.</div>
+
+    <a href="{{ url_for('student.student_mess') }}" class="back-btn">← Back to Room Services</a>
+  </div>
+
+  <script>
+    const filterDropdown = document.getElementById('filter');
+    const tableBody = document.getElementById('table-body');
+    const noRecordsMsg = document.getElementById('no-records');
+
+    const fetchData = async (filter) => {
+      try {
+        const response = await fetch(`/student/get_student_mess_checkin_history_table?filter=${filter}`);
+        const data = await response.json();
+
+        tableBody.innerHTML = '';
+        if (!data || data.length === 0 || data.error) {
+          noRecordsMsg.style.display = 'block';
+          return;
+        }
+
+        noRecordsMsg.style.display = 'none';
+
+        data.forEach(entry => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${entry.date || '-'}</td>
+            <td>${entry.mess_name || 'N/A'}</td>
+            <td>${entry.checkin_time || '-'}</td>
+          `;
+          tableBody.appendChild(row);
+        });
+      } catch (error) {
+        console.error('Fetch error:', error);
+      }
+    };
+
+    // Load default (today) data on page load
+    window.onload = () => {
+      fetchData('today');
+    };
+
+    // Fetch on filter change
+    filterDropdown.addEventListener('change', () => {
+      const selected = filterDropdown.value;
+      fetchData(selected);
+    });
+  </script>
+</body>
+</html>

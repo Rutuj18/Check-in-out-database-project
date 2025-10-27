@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mess Reports</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #dcefff, #eef2ff);
+      margin: 0;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+
+    .logout-btn {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      background-color: #ef4444;
+      color: white;
+      padding: 8px 14px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      text-decoration: none;
+      transition: background-color 0.2s;
+    }
+
+    .logout-btn:hover {
+      background-color: #dc2626;
+    }
+
+    h1 {
+      text-align: center;
+      color: #1e3a8a;
+      margin-bottom: 30px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 12px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+
+    th {
+      background-color: #e3f0ff;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f6faff;
+    }
+
+    .btn {
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background-color: #1e40af;
+    }
+
+    .back-btn {
+      display: inline-block;
+      margin-top: 30px;
+      background-color: #2563eb;
+      color: white;
+      padding: 10px 20px;
+      font-size: 15px;
+      border-radius: 10px;
+      text-decoration: none;
+    }
+
+    .back-btn:hover {
+      background-color: #1e40af;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="/" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+
+    <h1><i class="fas fa-file-invoice"></i> Mess Check In Out Reports</h1>
+
+    <table id="report-table">
+      <thead>
+        <tr>
+          <th>User ID</th>
+          <th>User Type</th>
+          <th>Mess</th>
+          <th>Date</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+      <tbody id="report-body">
+        <!-- Fetched data will be inserted here -->
+      </tbody>
+    </table>
+
+    <!-- Updated route here for Export to Excel -->
+    <form method="post" action="/admin/export_mess_checkins">
+      <button class="btn" type="submit">
+        <i class="fas fa-download"></i> Export to Excel
+      </button>
+    </form>
+
+    <a href="{{ url_for('admin.admin_mess') }}" class="back-btn">← Back to Manage Mess</a>
+  </div>
+
+  <script>
+    window.onload = async () => {
+      try {
+        const response = await fetch('/admin/get_mess_checkin_history');
+        const data = await response.json();
+        const tableBody = document.getElementById('report-body');
+
+        if (Array.isArray(data) && data.length > 0) {
+          data.forEach(entry => {
+            const row = document.createElement('tr');
+            row.innerHTML = ` 
+              <td>${entry.user_id}</td>
+              <td>${entry.user_type}</td>
+              <td>${entry.mess_name}</td>
+              <td>${entry.date}</td>
+              <td>${entry.time}</td>
+            `;
+            tableBody.appendChild(row);
+          });
+        } else {
+          tableBody.innerHTML = '<tr><td colspan="5">No data found.</td></tr>';
+        }
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+        document.getElementById('report-body').innerHTML = '<tr><td colspan="5">Error fetching data.</td></tr>';
+      }
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Manage Mess Details</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #dcefff, #eef2ff);
+      margin: 0;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background-color: rgba(255, 255, 255, 0.95);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+
+    h1 {
+      text-align: center;
+      color: #1e3a8a;
+      margin-bottom: 30px;
+    }
+
+    .logout-btn {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      background-color: #ef4444;
+      color: white;
+      padding: 8px 14px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      text-decoration: none;
+      transition: background-color 0.2s;
+    }
+
+    .logout-btn:hover {
+      background-color: #dc2626;
+    }
+
+    select {
+      padding: 10px;
+      width: 100%;
+      font-size: 16px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    .details-box {
+      background-color: #f0f7ff;
+      border-radius: 10px;
+      padding: 20px;
+      display: none;
+    }
+
+    .details-box p {
+      margin: 10px 0;
+      font-size: 16px;
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+
+    li {
+      margin: 5px 0;
+    }
+
+    .back-btn {
+      display: inline-block;
+      margin-top: 30px;
+      background-color: #2563eb;
+      color: white;
+      padding: 10px 20px;
+      font-size: 15px;
+      border-radius: 10px;
+      text-decoration: none;
+    }
+
+    .back-btn:hover {
+      background-color: #1e40af;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="{{ url_for('main.home') }}" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+
+    <h1><i class="fas fa-utensils"></i> Mess Details</h1>
+
+    <label for="messSelect"><strong>Select a Mess:</strong></label>
+    <select id="messSelect">
+      <option value="">-- Choose a mess --</option>
+    </select>
+
+    <div class="details-box" id="messDetails">
+      <p><strong>Capacity:</strong> <span id="capacity"></span></p>
+      <p><strong>Student Count:</strong> <span id="studentCount"></span></p>
+    </div>
+
+    <a href="{{ url_for('admin.admin_mess') }}" class="back-btn">← Back to Manage Mess</a>
+  </div>
+
+  <script>
+    const messSelect = document.getElementById("messSelect");
+    const messDetails = document.getElementById("messDetails");
+    const messName = document.getElementById("messName");
+    const capacity = document.getElementById("capacity");
+    const studentCount = document.getElementById("studentCount");
+
+
+    // Fetch all messes and populate dropdown
+    fetch('/admin/get_all_mess')
+      .then(res => res.json())
+      .then(data => {
+        data.forEach(mess => {
+          const option = document.createElement("option");
+          option.value = mess.mess_id;
+          option.textContent = mess.name;
+          messSelect.appendChild(option);
+        });
+      });
+
+    // When mess is selected, show details
+    messSelect.addEventListener("change", () => {
+      const messId = messSelect.value;
+
+      if (!messId) {
+        messDetails.style.display = "none";
+        return;
+      }
+
+      fetch(`/admin/get_mess_details/${messId}`)
+        .then(res => res.json())
+        .then(data => {
+          messDetails.style.display = "block";
+          capacity.textContent = data.capacity;
+          studentCount.textContent = data.student_count;
+        });
+    });
+  </script>
+</body>
+</html>

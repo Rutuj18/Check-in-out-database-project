@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Manage Student Details</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #dcefff, #eef2ff);
+      margin: 0;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      background-color: #ffffffee;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      color: #1e3a8a;
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .logout-btn {
+      background-color: #ef4444;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      text-decoration: none;
+      margin-top: 10px;
+    }
+
+    .logout-btn:hover {
+      background-color: #b91c1c;
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 800px;
+    }
+
+    th, td {
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+
+    th {
+      background-color: #e3f0ff;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f6faff;
+    }
+
+    .action-btn {
+      padding: 6px 10px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-right: 5px;
+    }
+
+    .edit-btn {
+      background-color: #2563eb;
+      color: white;
+    }
+
+    .delete-btn {
+      background-color: #ef4444;
+      color: white;
+    }
+
+    .back-btn {
+      display: inline-block;
+      margin-top: 30px;
+      background-color: #2563eb;
+      color: white;
+      padding: 10px 20px;
+      font-size: 15px;
+      border-radius: 10px;
+      text-decoration: none;
+    }
+
+    .back-btn:hover {
+      background-color: #1e40af;
+    }
+
+    @media screen and (max-width: 768px) {
+      .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      h1 {
+        margin-bottom: 10px;
+      }
+
+      .logout-btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <form method="POST" id="filter-form">
+    <label for="hostel">Select Hostel:</label>
+    <select name="hostel" id="hostel-dropdown" required>
+      <option value="">-- Select Hostel --</option>
+      {% for hostel in hostels %}
+        <option value="{{ hostel.hostel_name }}">{{ hostel.hostel_name }}</option>
+      {% endfor %}
+    </select>
+    
+  
+    <label for="room">Select Room:</label>
+    <select name="room" id="room-dropdown" required>
+      <option value="">-- Select Room --</option>
+    </select>
+  
+    <button type="submit" class="btn">Filter</button>
+  </form>
+  
+  <div class="container">
+    <div class="top-bar">
+      <h1><i class="fas fa-user-graduate"></i> Manage Student Details</h1>
+      <a href="{{ url_for('main.home') }}" class="logout-btn">Logout</a>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Roll Number</th>
+            <th>Name</th>
+            <th>Department</th>
+            <th>Email</th>
+            <th>Hostel</th>
+            <th>Room No</th>
+            <th>Mess ID</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for student in students %}
+          <tr>
+            <td>{{ student.roll_no }}</td>
+            <td>{{ student.name }}</td>
+            <td>{{ student.department }}</td>
+            <td>{{ student.email }}</td>
+            <td>{{ student.hostel_name }}</td>
+            <td>{{ student.room_no }}</td>
+            <td>{{ student.mess_id }}</td>
+            <td>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <a href="{{url_for('admin.admin_hostels')}}" class="back-btn">← Back to Manage Hostels</a>
+  </div>
+  <script>
+    document.getElementById('hostel-dropdown').addEventListener('change', function () {
+      const hostelName = this.value;  // Get the selected hostel name
+      const roomDropdown = document.getElementById('room-dropdown');  
+      // Clear existing room options
+      roomDropdown.innerHTML = '<option value="">-- Select Room --</option>';
+      if (hostelName) {
+        // Make a request to fetch the rooms for the selected hostel
+        fetch(`/admin/get-rooms/${hostelName}`)
+          .then(response => response.json())
+          .then(data => {
+            if (data.length === 0) {
+              const option = document.createElement('option');
+              option.textContent = "No rooms available";
+              roomDropdown.appendChild(option);
+            } else {
+              // Populate room dropdown with the fetched rooms
+              data.forEach(room => {
+                const option = document.createElement('option');
+                option.value = room;  // Room number or name
+                option.textContent = room;  // Display room name/number
+                roomDropdown.appendChild(option);
+              });
+            }
+          })
+          .catch(error => {
+            console.error('Error fetching rooms:', error);
+          });
+      }
+    });
+  </script>
+  
+  
+</body>
+</html>
