@@ -64,11 +64,6 @@ def student_logout():
     flash("Logged out successfully.", "info")
     return redirect(url_for('student.student_login'))
 
-
-@student_bp.route('/forget-password')
-def student_forget_password():
-    return render_template('User/Student/stud_forget_password.html')
-
 @student_bp.route('/register', methods=['GET', 'POST'])
 def student_register():
     if request.method == 'POST':
@@ -795,6 +790,7 @@ def student_mess_allotment_details():
     qr_base64 = base64.b64encode(buffer.getvalue()).decode()
 
     return render_template('User/Student/student_mess_allotment_details.html', mess=mess, qr_code=qr_base64)
+
 
 
 
